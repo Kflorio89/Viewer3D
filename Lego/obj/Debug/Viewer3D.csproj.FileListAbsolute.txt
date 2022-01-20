@@ -32,3 +32,4 @@ C:\Users\3D Infotech\Desktop\Viewer3D-main\Lego\bin\Debug\devDept.Graphics.Win.v
 C:\Users\3D Infotech\Desktop\Viewer3D-main\Lego\bin\Debug\devDept.Geometry.v12.xml
 C:\Users\3D Infotech\Desktop\Viewer3D-main\Lego\obj\Debug\Viewer3D.csproj.CopyComplete
 C:\Users\3D Infotech\Desktop\Viewer3D-main\Lego\obj\Debug\Viewer3D.csproj.AssemblyReference.cache
+C:\Users\3D Infotech\Desktop\Viewer3D-main\Lego\bin\Debug\Viewer3D.exe.config
