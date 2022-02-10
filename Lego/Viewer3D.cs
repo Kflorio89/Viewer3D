@@ -26,10 +26,10 @@ namespace WindowsApplication1
         string scanFilePath = "";
         double currZMin = double.MaxValue;
         double currZMax = double.MinValue;
-        double currXMax = double.MinValue;
         double currXMin = double.MaxValue;
-        double currYMax = double.MinValue;
+        double currXMax = double.MinValue;
         double currYMin = double.MaxValue;
+        double currYMax = double.MinValue;
 
         public Viewer3D()
         {
@@ -56,6 +56,21 @@ namespace WindowsApplication1
             coor.ArrowColorZ = Color.Blue;
             coor.LabelColor = Color.White;
             model1.Viewports[0].CoordinateSystemIcon = coor;
+            model1.Grid.ColorAxisX = Color.Red;
+            model1.Grid.ColorAxisY = Color.Green;
+            model1.Grid.Lighting = true;
+            model1.OriginSymbol.Visible = false;
+
+            /*Grid g = new Grid(new Point3D(-100, -100), new Point2D(100, 100), 10, Plane.XY);
+            //Grid g2 = new Grid(new Point3D(-100, -100), new Point2D(100, 100), 10, Plane.YZ);
+            g.Lighting = true;
+            //g2.Lighting = true;
+            g.ColorAxisX = Color.Red;
+            g.ColorAxisY = Color.Green;
+            //g2.ColorAxisX = Color.Green;
+            //g2.ColorAxisY = Color.Blue;
+            model1.Grids = new Grid[] { g };
+            model1.Grid.Visible = true;*/
             /*Entity ent = FunctionPlot();
             // adds it to the vieport
             model1.Entities.Add(ent);
@@ -76,8 +91,8 @@ namespace WindowsApplication1
                 this.Invoke(new Action(() =>
                 {
                     model1.Grid.Plane = new devDept.Geometry.Plane(new devDept.Geometry.Point3D(0, 0, currZMin), new devDept.Geometry.Vector3D(0D, 0D, 1D));
-                    model1.Grid.Min = new Point3D(currXMin + 5, currYMin + 5, currZMin + 5);
-                    model1.Grid.Max = new Point3D(currXMax + 5, currYMax + 5, currZMax + 5);
+                    model1.Grid.Min = new Point3D(currXMin, currYMin, currZMin);
+                    model1.Grid.Max = new Point3D(currXMax, currYMax, currZMax);
                     model1.Focus();
                     model1.Entities.Clear();
                     // adds it to the vieport
@@ -91,6 +106,9 @@ namespace WindowsApplication1
             }
             else
             {
+                model1.Grid.Plane = new devDept.Geometry.Plane(new devDept.Geometry.Point3D(0, 0, currZMin), new devDept.Geometry.Vector3D(0D, 0D, 1D));
+                model1.Grid.Min = new Point3D(currXMin, currYMin, currZMin);
+                model1.Grid.Max = new Point3D(currXMax, currYMax, currZMax);
                 model1.Focus();
                 model1.Entities.Clear();
                 // adds it to the vieport
@@ -113,20 +131,63 @@ namespace WindowsApplication1
                     return new FastPointCloud(new float[] { });
                 }
                 string[] lines = File.ReadAllLines(scanFilePath);
-                PointCloud surface = new PointCloud(lines.Length, 1, PointCloud.natureType.Multicolor);
 
-                // defines the colors of the points
-                /*Legend legend = model1.Legends[0];
-                legend.ColorTable = Legend.RedToBlue9;
-                legend.Visible = true;
-                int colorLen = legend.ColorTable.Length;
-                legend.Title = "Distance";
-                legend.Subtitle = "Absolute point-model distance (mm)";
-                */
-                double zMin = double.MaxValue;
-                double zMax = double.MinValue;
                 List<Point3D> points = new List<Point3D>();
-                for (int i = 0; i < lines.Length; ++i)
+                // Get X min/max
+                string[] minmax = lines[0].Split(',');
+                string xMin = minmax[0].Split('=')[1];
+                string xMax = minmax[1].Split('=')[1];
+
+                // Get Y min/max
+                minmax = lines[1].Split(',');
+                string yMin = minmax[0].Split('=')[1];
+                string yMax = minmax[1].Split('=')[1];
+
+                // Get Z min/max
+                minmax = lines[2].Split(',');
+                string zMin = minmax[0].Split('=')[1];
+                string zMax = minmax[1].Split('=')[1];
+
+                if (!double.TryParse(xMin, out double xmin))
+                {
+                    Console.WriteLine("Error parsing xmin from textfile.");
+                }
+
+                if (!double.TryParse(xMax, out double xmax))
+                {
+                    Console.WriteLine("Error parsing xmax from textfile.");
+                }
+
+                if (!double.TryParse(yMin, out double ymin))
+                {
+                    Console.WriteLine("Error parsing ymin from textfile.");
+                }
+
+                if (!double.TryParse(yMax, out double ymax))
+                {
+                    Console.WriteLine("Error parsing ymax from textfile.");
+                }
+
+                if (!double.TryParse(zMin, out double zmin))
+                {
+                    Console.WriteLine("Error parsing zmin from textfile.");
+                }
+
+                if (!double.TryParse(zMax, out double zmax))
+                {
+                    Console.WriteLine("Error parsing zmax from textfile.");
+                }
+
+                currXMin = xmin;
+                currXMax = xmax;
+                currYMin = ymin;
+                currYMax = ymax;
+                currZMin = zmin;
+                currZMax = zmax;
+                double collectedZMin = double.MaxValue;
+                double collectedZMax = double.MinValue;
+
+                for (int i = 3; i < lines.Length; ++i)
                 {
                     string[] coords = lines[i].Split(',');
                     if (coords.Length != 3)
@@ -152,47 +213,32 @@ namespace WindowsApplication1
                         Console.WriteLine($"Error parsing z from: {lines[i]}");
                         z = 0;
                     }
+
+                    if (collectedZMax < z)
+                    {
+                        collectedZMax = z;
+                    }
+                    if (collectedZMin > z)
+                    {
+                        collectedZMin = z;
+                    }
+
                     points.Add(new Point3D(x, y, z));
-                    if (z < zMin)
-                    {
-                        zMin = z;
-                    }
-                    else if (z > zMax)
-                    {
-                        zMax = z;
-                    }
-
-                    if (x < currXMin)
-                    {
-                        currXMin = x;
-                    }
-                    else if (x > currXMax)
-                    {
-                        currXMax = x;
-                    }
-
-                    if (y < currYMin)
-                    {
-                        currYMin = y;
-                    }
-                    else if (y > currYMax)
-                    {
-                        currYMax = y;
-                    }
                 }
-                currZMin = zMin;
-                currZMax = zMax;
-                /*for (int i = 0; i < points.Count; ++i)
-                {
-                    Color clr = HsvToRgbWhiteEnd(ZNorm(points[i].Z, zMin, zMax) * 360 - 120, 1, 1);
-                    surface.Vertices[i] = new PointRGB(points[i].X, points[i].Y, points[i].Z, clr);
-                }*/
+
+                PointCloud surface = new PointCloud(points.Count, 1, PointCloud.natureType.Multicolor);
 
                 for (int i = 0; i < points.Count; ++i)
                 {
-                    Color clr = transitionOfHueRange(ZNorm(points[i].Z, zMin, zMax), 360, 0);
+                    Color clr = HsvToRgbWhiteEnd(ZNorm(points[i].Z, collectedZMin, collectedZMax) * 360 - 120, 1, 1);
                     surface.Vertices[i] = new PointRGB(points[i].X, points[i].Y, points[i].Z, clr);
                 }
+
+                /* for (int i = 0; i < points.Count; ++i)
+                {
+                    Color clr = transitionOfHueRange(ZNorm(points[i].Z, zMin, zMax), 360, 0);
+                    surface.Vertices[i] = new PointRGB(points[i].X, points[i].Y, points[i].Z, clr);
+                }*/
 
                 return surface.ConvertToFastPointCloud();
             }
@@ -511,19 +557,6 @@ namespace WindowsApplication1
         private void ButtonCancel_Click(object sender, EventArgs e)
         {
             model1.CancelWork();
-        }
-
-        private void Loadbtn_Click(object sender, EventArgs e)
-        {
-            string pathtxt = Pathtxt.Text.Trim();
-            if (File.Exists(pathtxt))
-            {
-                Load3D(pathtxt);
-            }
-            else
-            {
-                Console.WriteLine($"File at location:{pathtxt} not found.");
-            }
         }
 
         private void Load3D(string filePath)
