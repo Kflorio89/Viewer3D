@@ -56,8 +56,8 @@ namespace WindowsApplication1
             coor.ArrowColorZ = Color.Blue;
             coor.LabelColor = Color.White;
             model1.Viewports[0].CoordinateSystemIcon = coor;
-            model1.Grid.ColorAxisX = Color.Red;
-            model1.Grid.ColorAxisY = Color.Green;
+            model1.Grid.ColorAxisX = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            model1.Grid.ColorAxisY = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
             model1.Grid.Lighting = true;
             model1.OriginSymbol.Visible = false;
 
@@ -85,7 +85,10 @@ namespace WindowsApplication1
         public void LoadPointCloud()
         {
             Entity ent = FunctionPlot();
-
+            Line lnX = new Line(currXMin, currYMin, currZMin, currXMax, currYMin, currZMin);
+            Line lnY = new Line(currXMin, currYMin, currZMin, currXMin, currYMax, currZMin);
+            Line lnZ = new Line(currXMin, currYMin, currZMin, currXMin, currYMin, currZMax);
+            
             if (this.InvokeRequired)
             {
                 this.Invoke(new Action(() =>
@@ -97,6 +100,10 @@ namespace WindowsApplication1
                     model1.Entities.Clear();
                     // adds it to the vieport
                     model1.Entities.Add(ent);
+
+                    model1.Entities.Add(lnX, Color.Red);
+                    model1.Entities.Add(lnY, Color.Green);
+                    model1.Entities.Add(lnZ, Color.Blue);
                     // Sets trimetric view
                     model1.SetView(viewType.Trimetric);
                     // Fits the model in the viewport
@@ -113,12 +120,19 @@ namespace WindowsApplication1
                 model1.Entities.Clear();
                 // adds it to the vieport
                 model1.Entities.Add(ent);
+
+                model1.Entities.Add(lnX, Color.Red);
+                model1.Entities.Add(lnY, Color.Green);
+                model1.Entities.Add(lnZ, Color.Blue);
+
                 // Sets trimetric view
                 model1.SetView(viewType.Trimetric);
                 // Fits the model in the viewport
                 model1.ZoomFit();
                 model1.Refresh();
             }
+
+
         }
 
         public FastPointCloud FunctionPlot()
@@ -252,7 +266,7 @@ namespace WindowsApplication1
         public static Color transitionOfHueRange(double percentage, int startHue, int endHue)
         {
             // From 'startHue' 'percentage'-many to 'endHue'
-            // Finally map from [0°, 360°] -> [0, 1.0] by dividing
+            // Finally map from [0Â°, 360Â°] -> [0, 1.0] by dividing
             double hue = ((percentage * (endHue - startHue)) + startHue) / 360;
 
             double saturation = 1.0;
