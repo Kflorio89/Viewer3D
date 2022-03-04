@@ -23,6 +23,7 @@ namespace WindowsApplication1
     {
         public string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         public static FileSystemWatcher watcher;
+        public bool zoomFitOnce = false;
         string scanFilePath = "";
         double currZMin = double.MaxValue;
         double currZMax = double.MinValue;
@@ -94,6 +95,17 @@ namespace WindowsApplication1
             Line lnX = new Line(currXMin, currYMin, currZMin, currXMax, currYMin, currZMin);
             Line lnY = new Line(currXMin, currYMin, currZMin, currXMin, currYMax, currZMin);
             Line lnZ = new Line(currXMin, currYMin, currZMin, currXMin, currYMin, currZMax);
+            Line lnZ0 = new Line(currXMin - .75, currYMin, 0, currXMin + .75, currYMin, 0);
+
+            lnX.LineWeight = lnX.LineWeight * 3;
+            lnX.LineWeightMethod = colorMethodType.byEntity;
+            lnY.LineWeight = lnY.LineWeight * 3;
+            lnY.LineWeightMethod = colorMethodType.byEntity;
+            lnZ.LineWeight = lnZ.LineWeight * 3;
+            lnZ.LineWeightMethod = colorMethodType.byEntity;
+
+            lnZ0.LineWeight = lnZ0.LineWeight * 3;
+            lnZ0.LineWeightMethod = colorMethodType.byEntity;
 
             Rotation rotation = new Rotation(Math.PI / 2d, Vector3D.AxisX, new Point3D(currXMin, currYMin, currZMin));
             Rotation rotation2 = new Rotation(Math.PI / 2d, Vector3D.AxisX, new Point3D(currXMin, currYMin, 0));
@@ -110,7 +122,7 @@ namespace WindowsApplication1
                 Alignment = devDept.Eyeshot.Entities.Text.alignmentType.MiddleRight
             };
             txt.TransformBy(rotation);
-            
+
             devDept.Eyeshot.Entities.Text txt2 = new Text(new Point3D(currXMin - 1, currYMin, 0), "0", .75)
             {
                 Color = Color.White,
@@ -135,7 +147,7 @@ namespace WindowsApplication1
             };
             txt4.TransformBy(rotation3);
 
-            devDept.Eyeshot.Entities.Text txt5 = new Text(new Point3D(currXMax, currYMin - 1, currZMin), currXMax.ToString(), .75) 
+            devDept.Eyeshot.Entities.Text txt5 = new Text(new Point3D(currXMax, currYMin - 1, currZMin), currXMax.ToString(), .75)
             {
                 Color = Color.White,
                 ColorMethod = colorMethodType.byEntity,
@@ -192,10 +204,15 @@ namespace WindowsApplication1
                     model1.Entities.Add(lnX, Color.Red);
                     model1.Entities.Add(lnY, Color.Green);
                     model1.Entities.Add(lnZ, Color.Blue);
+                    model1.Entities.Add(lnZ0, Color.Blue);
                     // Sets trimetric view
-                    model1.SetView(viewType.Trimetric);
                     // Fits the model in the viewport
-                    model1.ZoomFit();
+                    if (!zoomFitOnce)
+                    {
+                        model1.ZoomFit();
+                        model1.SetView(viewType.Trimetric);
+                        zoomFitOnce = true;
+                    }
                     model1.Refresh();
                 }));
             }
@@ -363,7 +380,7 @@ namespace WindowsApplication1
             // Get the color
             return HslColorToRgb(hue, saturation, lightness);
         }
-        
+
         public static Color HslColorToRgb(double hue, double saturation, double lightness)
         {
             if (saturation == 0.0)
@@ -724,5 +741,4 @@ namespace WindowsApplication1
             return null;
         }
     }
-
 }
